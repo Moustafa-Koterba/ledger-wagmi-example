@@ -33,11 +33,11 @@
       }
     },
     "permissions": [
-      "account.list",
-      "account.request",
-      "currency.list",
-      "message.sign",
-      "transaction.signAndBroadcast"
+        "account.list",
+        "account.receive",
+        "account.request",
+        "currency.list",
+        "wallet_requestPermissions"
     ],
     "domains": ["https://"],
     "visibility": "complete",

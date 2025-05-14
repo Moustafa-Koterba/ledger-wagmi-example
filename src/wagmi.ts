@@ -1,19 +1,26 @@
-import { http, createConfig } from "wagmi";
-import { mainnet, sepolia } from "wagmi/chains";
-import { coinbaseWallet, injected, walletConnect } from "wagmi/connectors";
-import { custom } from "viem";
+import { mainnet } from "wagmi/chains";
+import { injected } from "wagmi/connectors";
 import { LedgerLiveEthereumProvider } from "./provider";
+import { custom } from "viem";
+import { createConfig } from "wagmi";
+
+const provider = new LedgerLiveEthereumProvider();
 
 export const config = createConfig({
-  chains: [mainnet, sepolia],
+  chains: [mainnet],
   connectors: [
-    injected(),
-    coinbaseWallet(),
-    walletConnect({ projectId: import.meta.env.VITE_WC_PROJECT_ID }),
+    injected({
+      target() {
+        return {
+          id: "some random id, see docs",
+          name: "some random name, see docs",
+          provider: provider,
+        };
+      },
+    }),
   ],
   transports: {
-    [mainnet.id]: custom(new LedgerLiveEthereumProvider()),
-    [sepolia.id]: http(),
+    [mainnet.id]: custom(provider),
   },
 });
 

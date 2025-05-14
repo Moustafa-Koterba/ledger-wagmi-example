@@ -1,16 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEmitter } from "events";
-
-declare global {
-  interface Window {
-    ElectronWebview?: {
-      postMessage(message: JsonRpcRequestMessage, targetOrigin?: string): void;
-    };
-    ReactNativeWebView?: {
-      postMessage(message: string): void;
-    };
-  }
-}
+import { EIP1193Provider } from "viem";
 
 // By default post to any origin
 const DEFAULT_TARGET_ORIGIN = "*";
@@ -144,33 +134,6 @@ export interface ProviderMessage {
 
 export type Address = `0x${string}`;
 
-export interface EIP1193Provider {
-  on(event: "connect", listener: (info: ProviderConnectInfo) => void): this;
-  on(event: "disconnect", listener: (error: ProviderRpcError) => void): this;
-  /** @deprecated */
-  on(event: "close", listener: (error: Error) => void): this;
-  on(event: "chainChanged", listener: (chainId: string) => void): this;
-  /** @deprecated */
-  on(event: "networkChanged", listener: (networkId: string) => void): this;
-  on(event: "accountsChanged", listener: (accounts: Address[]) => void): this;
-  on(event: "message", listener: (message: ProviderMessage) => void): this;
-  /** @deprecated */
-  on(event: "notification", listener: (payload: ProviderMessage) => void): this;
-  on(event: string, listener: (...args: unknown[]) => void): this;
-
-  request: (args: RequestArguments) => Promise<unknown>;
-  /** @deprecated */
-  send(...args: unknown[]): unknown;
-  /** @deprecated */
-  sendAsync(
-    request: { method: string; params?: any[]; id?: MessageId },
-    callback: (
-      error: string | null,
-      result: { method: string; params?: any[]; result: any } | any
-    ) => void
-  ): void;
-}
-
 /**
  * Represents an error in an RPC returned from the event source. Always contains a code and a reason. The message
  * is constructed from both.
@@ -201,7 +164,7 @@ export class LedgerLiveEthereumProvider
   }
 
   isLedgerLive = true;
-  isMetaMask = true;
+  isMetaMask = undefined;
 
   private enabled: Promise<string[]> | null = null;
   private readonly targetOrigin: string;
@@ -216,7 +179,6 @@ export class LedgerLiveEthereumProvider
     targetOrigin = DEFAULT_TARGET_ORIGIN,
     timeoutMilliseconds = DEFAULT_TIMEOUT_MILLISECONDS,
     eventSource = window,
-    eventTarget,
   }: LedgerLiveEthereumProviderOptions = {}) {
     // Call super for `this` to be defined
     super();
@@ -224,20 +186,7 @@ export class LedgerLiveEthereumProvider
     this.targetOrigin = targetOrigin;
     this.timeoutMilliseconds = timeoutMilliseconds;
     this.eventSource = eventSource;
-
-    if (eventTarget) {
-      this.eventTarget = eventTarget;
-    } else if (window.ReactNativeWebView) {
-      this.eventTarget = {
-        postMessage(message, _targetOrigin) {
-          return window.ReactNativeWebView?.postMessage(
-            JSON.stringify(message)
-          );
-        },
-      };
-    } else {
-      this.eventTarget = window.ElectronWebview;
-    }
+    this.eventTarget = window.parent;
 
     // Listen for messages from the event source.
     this.eventSource.addEventListener("message", this.handleEventSourceMessage);
@@ -245,18 +194,6 @@ export class LedgerLiveEthereumProvider
       "message",
       this.handleEventSourceMessage
     );
-  }
-  on(event: "connect", listener: (info: ProviderConnectInfo) => void): this;
-  on(event: "disconnect", listener: (error: ProviderRpcError) => void): this;
-  on(event: "close", listener: (error: Error) => void): this;
-  on(event: "chainChanged", listener: (chainId: string) => void): this;
-  on(event: "networkChanged", listener: (networkId: string) => void): this;
-  on(event: "accountsChanged", listener: (accounts: Address[]) => void): this;
-  on(event: "message", listener: (message: ProviderMessage) => void): this;
-  on(event: "notification", listener: (payload: ProviderMessage) => void): this;
-  on(event: string, listener: (...args: unknown[]) => void): this;
-  on(event: unknown, listener: unknown): this {
-    throw new Error("Method not implemented.");
   }
 
   public isConnected = () => {
@@ -309,7 +246,7 @@ export class LedgerLiveEthereumProvider
     return promise;
   }
 
-  public async request(args: RequestArguments): Promise<unknown> {
+  public async request(args: RequestArguments): Promise<any> {
     const response = await this.execute(args.method, args.params);
 
     if ("error" in response) {
@@ -397,7 +334,7 @@ export class LedgerLiveEthereumProvider
     }
 
     try {
-      const message = JSON.parse(data) as ReceivedMessageType;
+      const message = data as ReceivedMessageType;
 
       // Always expect jsonrpc to be set to '2.0'
       if (message.jsonrpc !== JSON_RPC_VERSION) {
