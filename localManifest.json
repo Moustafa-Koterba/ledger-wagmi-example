@@ -1,0 +1,45 @@
+{
+    "$schema": "https://live-app-catalog.ledger.com/schema.json",
+    "id": "WagmiIntegration",
+    "name": "Wagmi integration",
+    "private": true,
+    "url": "https://dapp-browser.apps.ledger.com/v2/",
+    "params": {
+      "dappUrl": "http://localhost:5173",
+      "nanoApp": "WagmiIntegration",
+      "dappName": "WagmiIntegration",
+      "networks": [
+        {
+          "currency": "ethereum",
+          "chainID": 1,
+          "nodeURL": "https://eth-dapps.api.live.ledger.com"
+        }
+      ]
+    },
+    "homepageUrl": "https://wagmi.sh/",
+    "icon": "https://developers.moralis.com/wp-content/uploads/web3wiki/196-wagmi/637e6c001c60c5e2d8078d8c_wOdHswYe73lnRqkKuJDsSLgwRkQ9Kt831G_9nSGTEFw.png",
+    "platforms": ["android", "ios", "desktop"],
+    "apiVersion": "^2.0.0",
+    "manifestVersion": "2",
+    "branch": "stable",
+    "categories": ["swap"],
+    "currencies": ["ethereum"],
+    "content": {
+      "shortDescription": {
+        "en": "Wagmi integration example for dapp browser v2"
+      },
+      "description": {
+        "en": "Wagmi integration example for dapp browser v2"
+      }
+    },
+    "permissions": [
+      "account.list",
+      "account.request",
+      "currency.list",
+      "message.sign",
+      "transaction.signAndBroadcast"
+    ],
+    "domains": ["https://"],
+    "visibility": "complete",
+    "overrides": []
+  }
