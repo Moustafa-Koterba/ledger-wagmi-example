@@ -37,7 +37,9 @@
         "account.receive",
         "account.request",
         "currency.list",
-        "wallet_requestPermissions"
+        "wallet_requestPermissions",
+        "wallet.userId",
+        "wallet.info"
     ],
     "domains": ["https://"],
     "visibility": "complete",
